@@ -1,6 +1,6 @@
 				Notes
 
 * Plan
-** merge_sort (start_addr, mid_addr)
-** merge_sort (mid_addr + 1, end_addr)
-** merge (start_addr, end_addr)
+** DONE merge_sort (start_addr, mid_addr)
+** DONE merge_sort (mid_addr + 1, end_addr)
+** TODO merge (start_addr, end_addr)

@@ -9,6 +9,7 @@
 	      PROMPT_ENTER_ELEMENTS db	"Please enter elements of your array : ", 0
 	      prompt_print_array db	"Array ", 0
 	      print_space db " ",0
+	      merge_sort_debug_str db "Merge Sort Params: EAX, ECX: ", 0
 	      %define ARR_LEN dword [n]
 	      .UDATA
 	      n	    resd 1
@@ -29,10 +30,71 @@ GET_ARRAY:
 	      mov   EAX, arr
 	      mov   ECX, ARR_LEN
 	      call  Read_Arr
+
 	      mov   ECX, ARR_LEN
 	      PutStr prompt_print_array
 	      call  Print_Arr
+
+	      mov   EAX, arr
+	      mov   ECX, ARR_LEN
+	      call  Merge_Sort
 .EXIT
+
+;;; --------------------------------------------------
+Merge_Sort:
+	      ;; EAX - Array start
+	      ;; ECX - array length
+	      
+	      PutStr merge_sort_debug_str
+	      nwln
+	      PutLInt EAX
+	      PutStr print_space
+	      PutLInt ECX
+	      nwln
+
+	      cmp   ECX, 2
+	      jl    Trivial_Merge_Sort
+
+	      ;; Merge_Sort (first half)
+	      push  ECX
+	      shr   ECX, 1
+	      call  Merge_Sort
+	      pop   ECX
+
+	      ;; Merge_Sort (second half)
+	      push  ECX
+	      push  EAX
+	      push  EBX
+
+	      mov   EBX, ECX
+	      shr   EBX, 1
+	      sub   ECX, EBX
+	      imul  EBX, 4
+	      add   EAX, EBX
+	      call  Merge_Sort
+
+	      pop   EBX
+	      pop   EAX
+	      pop   ECX
+
+	      ;; Merge (first half, second half)
+
+	      ret
+
+;;; --------------------------------------------------
+Trivial_Merge_Sort:
+	      ret
+	      
+;;; --------------------------------------------------
+Merge:
+
+;;; --------------------------------------------------
+;;; Macro to calculate current middle index of array 
+	      %macro MIDDLE_INDEX 3
+	      mov   %3, %1	    ;;; 
+	      add   %3, %2	    ;;
+	      shr   %3, 1	    ;;
+	      %endmacro
 
 ;;; --------------------------------------------------
 Read_Arr:
@@ -65,12 +127,3 @@ new_loop1:
 	      loop  new_loop1
 	      nwln
 	      ret
-
-;;; --------------------------------------------------
-Merge_Sort:
-	      ;; EAX - Array start
-	      ;; ECX - array length
-
-	      ;; Merge_Sort (first half)
-	      ;; Merge_Sort (second half)
-	      ;; Merge (first half, second half)
