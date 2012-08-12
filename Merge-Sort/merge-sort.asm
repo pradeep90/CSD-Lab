@@ -6,11 +6,10 @@
 	      %include "io.mac"
 	      .DATA
 	      MAX_SIZE EQU 25
-	      arr   dd 3, 1, 4, 5, 2
-	      n	    dd 5
 	      PROMPT_ENTER_ARR_LEN db	"Enter size of your Array : ", 0
 	      PROMPT_ENTER_ELEMENTS db	"Please enter elements of your array : ", 0
-	      prompt_print_array db	"Array ", 0
+	      print_orig_array db	"Original Array ", 0
+	      print_final_array	db	"Sorted Array ", 0
 	      print_space db " ",0
 	      merge_sort_debug_str db "Merge Sort Params: EAX, ECX: ", 0
 	      merge_sort_end_debug_str db "End Merge Sort", 0
@@ -20,53 +19,42 @@
 	      merge_copy_back_temp_debug_str db "Merge Copy back temp array: ", 0
 	      %define ARR_LEN dword [n]
 	      .UDATA
-	      ;; n	    resd 1
-	      ;; arr   resd MAX_SIZE
+	      n	    resd 1
+	      arr   resd MAX_SIZE
 	      temp_arr resd MAX_SIZE
 	      .CODE
 	      .STARTUP
 
 ;;; --------------------------------------------------
 READ_ARR_LEN:			    ; Read the length
-	      ;; PutStr PROMPT_ENTER_ARR_LEN
-	      ;; nwln
-	      ;; GetLInt [n]	    ; Size of input array
-	      ;; PutLInt [n]
-	      ;; nwln
+	      PutStr PROMPT_ENTER_ARR_LEN
+	      nwln
+	      GetLInt [n]	    ; Size of input array
+	      PutLInt [n]
+	      nwln
 
 ;;; --------------------------------------------------
 GET_ARRAY:
 	      mov   EAX, arr
 	      mov   ECX, ARR_LEN
-	      ;; call  Read_Arr
+	      call  Read_Arr
 
 	      mov   ECX, ARR_LEN
-	      PutStr prompt_print_array
+	      PutStr print_orig_array
 	      call  Print_Arr
-
-	      PutStr temp_array_debug_str
-	      PutLInt temp_arr
-	      nwln
 
 	      mov   EAX, arr
 	      mov   EBX, temp_arr
 	      mov   ECX, ARR_LEN
 	      call  Merge_Sort
-	      call Print_Orig_Arr
-.EXIT
+	      PutStr print_final_array
+	      call  Print_Orig_Arr
+	      .EXIT
 
 ;;; --------------------------------------------------
 Merge_Sort:
 	      ;; EAX - Array start
 	      ;; ECX - array length
-
-	      ;; pushad
-	      PutStr merge_sort_debug_str
-	      nwln
-	      PutLInt EAX
-	      PutStr print_space
-	      PutLInt ECX
-	      nwln
 
 	      cmp   ECX, 2
 	      jl    Trivial_Merge_Sort
@@ -113,13 +101,9 @@ Merge_Sort:
 	      ;; Index of temp array = 0
 	      sub   EDI, EDI
 	      call Merge
+
 	      call Merge_Copy_Back_Temp
 
-	      ;; popad
-	      nwln
-	      call Print_Temp_Arr
-	      PutStr merge_sort_end_debug_str
-	      nwln
 	      ret
 
 ;;; --------------------------------------------------
@@ -128,27 +112,15 @@ Trivial_Merge_Sort:
 	      
 ;;; --------------------------------------------------
 Merge:
+	      ;; Merge two arrays contents.
+	      ;; The final merged array will be in temp_arr
+	      ;; Arguments:
 	      ;; EAX - First array's start
 	      ;; EBX - Second array's start
 	      ;; ECX - Length of first array
 	      ;; EDX - Length of second array
 	      ;; EDI - Index in temp array
 	      pushad
-
-	      PutStr merge_debug_str
-	      nwln
-	      PutLInt EAX
-	      PutStr print_space
-	      PutLInt EBX
-	      PutStr print_space
-	      PutLInt ECX
-	      PutStr print_space
-	      PutLInt EDX
-	      PutStr print_space
-	      PutLInt EDI
-	      call  Print_Temp_Arr
-	      PutStr prompt_print_array
-	      call  Print_Orig_Arr
 
 	      ;; Handle the cases where one array is empty
 	      cmp   ECX, 0
@@ -164,6 +136,7 @@ Merge:
 	      cmp   EDX, EDI
 	      pop   EDI
 	      pop   EDX
+
 	      ;; Pick which ever is the least and update that array
 	      jl    Update_First_Array
 	      jmp   Update_Second_Array
@@ -179,9 +152,6 @@ Update_First_Array:
 	      inc   EDI
 	      call  Merge
 	      popad
-
-	      ;; TODO: Copy it all back to the original array
-	      ;; call Merge_Copy_Back_Temp
 	      ret
 
 ;;; --------------------------------------------------
@@ -208,8 +178,7 @@ Merge_Copy_Back_Temp:
 	      ;; EDX - Length of second array
 	      ;; EDI - Index in temp array
 	      pushad
-	      nwln
-	      PutStr merge_copy_back_temp_debug_str
+
 	      add   ECX, EDX
 	      mov   EBX, EAX
 	      mov   EAX, temp_arr
@@ -237,7 +206,6 @@ First_Array_Over:
 	      call  Copy_Array
 	      popad
 	      popad
-	      ;; call Merge_Copy_Back_Temp
 	      ret
 
 ;;; --------------------------------------------------
@@ -250,7 +218,6 @@ Second_Array_Over:
 	      call  Copy_Array
 	      popad
 	      popad
-	      ;; call Merge_Copy_Back_Temp
 	      ret
 
 ;;; --------------------------------------------------
@@ -259,14 +226,6 @@ Copy_Array:
 	      ;; EAX - Array start
 	      ;; EBX - Destination array
 	      ;; ECX - Array length
-	      PutStr copy_debug_str
-	      nwln
-	      PutLInt EAX
-	      PutStr print_space
-	      PutLInt EBX
-	      PutStr print_space
-	      PutLInt ECX
-	      nwln
 
 	      cmp   ECX, 0
 	      jz    Copy_Empty_Array
@@ -276,20 +235,10 @@ Copy_Array:
 copy_loop:
 	      push  dword [EAX + EDI * 4]
 	      pop   dword [EBX + EDI * 4]
-	      ;; mov   EDX, [EAX + EDI * 4]
-	      ;; mov   [EBX + EDI * 4], EDX
 	      inc   EDI
 	      loop  copy_loop
 
 	      pop   ECX
-	      sub   EDI, EDI
-copy_print_loop:
-	      PutLInt [EBX + EDI * 4]
-	      inc   EDI
-	      loop  copy_print_loop
-
-	      ;; PutStr copy_debug_str
-	      ;; nwln
 	      ret
 
 Copy_Empty_Array:
