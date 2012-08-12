@@ -1,0 +1,671 @@
+     1                                  	      ;; Program to sort elements of an array using merge sort.
+     2                                  	      ;; The original array is now sorted.
+     3                                  	      ;; [2012-08-09 Thu]
+     4                                  	      ;; Author - S Pradeep Kumar
+     5                                  
+     6                                  	      %include "io.mac"
+     7                              <1> extern   proc_nwln, proc_PutCh, proc_PutStr
+     8                              <1> extern   proc_GetStr, proc_GetCh
+     9                              <1> extern   proc_PutInt, proc_GetInt
+    10                              <1> extern   proc_PutLInt, proc_GetLInt
+    11                              <1> 
+    12                              <1> ;;-------------------------------------------------------------------
+    13                              <1> %macro  .STARTUP  0
+    14                              <1> ;group dgroup .data .bss
+    15                              <1>         global   _start
+    16                              <1> _start:
+    17                              <1> %endmacro
+    18                              <1> ;;-------------------------------------------------------------------
+    19                              <1> 
+    20                              <1> 
+    21                              <1> ;;-------------------------------------------------------------------
+    22                              <1> %macro  .EXIT  0
+    23                              <1>         mov    EAX,1
+    24                              <1>         xor    EBX,EBX
+    25                              <1>         int    0x80
+    26                              <1> %endmacro
+    27                              <1> ;;-------------------------------------------------------------------
+    28                              <1> 
+    29                              <1> 
+    30                              <1> ;;-------------------------------------------------------------------
+    31                              <1> %macro  .DATA 0
+    32                              <1>         segment .data
+    33                              <1> %endmacro
+    34                              <1> ;;-------------------------------------------------------------------
+    35                              <1> 
+    36                              <1> ;;-------------------------------------------------------------------
+    37                              <1> %macro  .UDATA 0
+    38                              <1>         segment .bss
+    39                              <1> %endmacro
+    40                              <1> ;;-------------------------------------------------------------------
+    41                              <1> 
+    42                              <1> ;;-------------------------------------------------------------------
+    43                              <1> %macro  .CODE 0
+    44                              <1>         segment .data
+    45                              <1>         segment .bss
+    46                              <1>         segment .text
+    47                              <1> %endmacro
+    48                              <1> ;;-------------------------------------------------------------------
+    49                              <1> 
+    50                              <1> 
+    51                              <1> ;;-------------------------------------------------------------------
+    52                              <1> %macro  nwln  0 
+    53                              <1>         call    proc_nwln
+    54                              <1> %endmacro
+    55                              <1> ;;-------------------------------------------------------------------
+    56                              <1> 
+    57                              <1> 
+    58                              <1> ;;-------------------------------------------------------------------
+    59                              <1> %macro  PutCh  1 
+    60                              <1>         push    AX
+    61                              <1>         mov     AL,%1
+    62                              <1>         call    proc_PutCh
+    63                              <1>         pop     AX
+    64                              <1> %endmacro
+    65                              <1> ;;-------------------------------------------------------------------
+    66                              <1> 
+    67                              <1> 
+    68                              <1> ;;-------------------------------------------------------------------
+    69                              <1> %macro  PutStr  1 
+    70                              <1>         push    ECX
+    71                              <1>         mov     ECX,%1
+    72                              <1>         call    proc_PutStr
+    73                              <1>         pop     ECX
+    74                              <1> %endmacro
+    75                              <1> ;;-------------------------------------------------------------------
+    76                              <1> 
+    77                              <1> 
+    78                              <1> ;;-------------------------------------------------------------------
+    79                              <1> %macro  GetStr  1-2 81
+    80                              <1>         push    ESI
+    81                              <1>         push    EDI
+    82                              <1>         mov     EDI,%1
+    83                              <1>         mov     ESI,%2
+    84                              <1>         call    proc_GetStr
+    85                              <1>         pop     EDI
+    86                              <1>         pop     ESI
+    87                              <1> %endmacro
+    88                              <1> ;;-------------------------------------------------------------------
+    89                              <1> 
+    90                              <1> 
+    91                              <1> ;;-------------------------------------------------------------------
+    92                              <1> %macro  GetCh   1
+    93                              <1>         push    SI
+    94                              <1>         xor     SI,SI
+    95                              <1> %ifidni %1,AL
+    96                              <1>         ;inc     SI
+    97                              <1>         call    proc_GetCh
+    98                              <1> %elifidni %1,AH
+    99                              <1>         mov     SI,1
+   100                              <1>         call    proc_GetCh
+   101                              <1> %else
+   102                              <1>         push    AX
+   103                              <1>         call    proc_GetCh
+   104                              <1>         mov     %1,AL
+   105                              <1>         pop     AX
+   106                              <1> %endif
+   107                              <1>         pop     SI
+   108                              <1> %endmacro
+   109                              <1> ;;-------------------------------------------------------------------
+   110                              <1> 
+   111                              <1> 
+   112                              <1> ;;-------------------------------------------------------------------
+   113                              <1> %macro  PutInt  1
+   114                              <1>         push    AX
+   115                              <1>         mov     AX,%1
+   116                              <1>         call    proc_PutInt
+   117                              <1>         pop     AX
+   118                              <1> %endmacro
+   119                              <1> ;;-------------------------------------------------------------------
+   120                              <1> 
+   121                              <1> 
+   122                              <1> ;;-------------------------------------------------------------------
+   123                              <1> %macro  GetInt  1
+   124                              <1> %ifnidni %1,AX
+   125                              <1>         push    AX
+   126                              <1>         call    proc_GetInt
+   127                              <1>         mov     %1,AX
+   128                              <1> 	  pop     AX
+   129                              <1> %else 
+   130                              <1>         call  proc_GetInt
+   131                              <1> %endif
+   132                              <1> %endmacro
+   133                              <1> ;;-------------------------------------------------------------------
+   134                              <1> 
+   135                              <1> ;;-------------------------------------------------------------------
+   136                              <1> %macro  PutLInt  1
+   137                              <1>         push    EAX
+   138                              <1>         mov     EAX,%1
+   139                              <1>         call    proc_PutLInt
+   140                              <1>         pop     EAX
+   141                              <1> %endmacro
+   142                              <1> ;;-------------------------------------------------------------------
+   143                              <1> 
+   144                              <1> ;;-------------------------------------------------------------------
+   145                              <1> %macro  GetLInt  1
+   146                              <1> %ifnidni %1,EAX
+   147                              <1>         push    EAX
+   148                              <1>         call    proc_GetLInt
+   149                              <1>         mov     %1,EAX
+   150                              <1> 	  pop     EAX
+   151                              <1> %else 
+   152                              <1>         call  proc_GetLInt
+   153                              <1> %endif
+   154                              <1> %endmacro
+   155                              <1> ;;-------------------------------------------------------------------
+   156                              <1> 
+   157                                  	      .DATA
+   158                              <1>  segment .data
+   159                                  	      MAX_SIZE EQU 25
+   160 00000000 030000000100000004-     	      arr   dd 3, 1, 4, 5, 2
+   161 00000009 000000050000000200-
+   162 00000012 0000               
+   163 00000014 05000000                	      n	    dd 5
+   164 00000018 456E7465722073697A-     	      PROMPT_ENTER_ARR_LEN db	"Enter size of your Array : ", 0
+   165 00000021 65206F6620796F7572-
+   166 0000002A 204172726179203A20-
+   167 00000033 00                 
+   168 00000034 506C6561736520656E-     	      PROMPT_ENTER_ELEMENTS db	"Please enter elements of your array : ", 0
+   169 0000003D 74657220656C656D65-
+   170 00000046 6E7473206F6620796F-
+   171 0000004F 757220617272617920-
+   172 00000058 3A2000             
+   173 0000005B 41727261792000          	      prompt_print_array db	"Array ", 0
+   174 00000062 2000                    	      print_space db " ",0
+   175 00000064 4D6572676520536F72-     	      merge_sort_debug_str db "Merge Sort Params: EAX, ECX: ", 0
+   176 0000006D 7420506172616D733A-
+   177 00000076 204541582C20454358-
+   178 0000007F 3A2000             
+   179 00000082 456E64204D65726765-     	      merge_sort_end_debug_str db "End Merge Sort", 0
+   180 0000008B 20536F727400       
+   181 00000091 4D6572676520506172-     	      merge_debug_str db "Merge Params: EAX, EBX, ECX, EDX, EDI: ", 0
+   182 0000009A 616D733A204541582C-
+   183 000000A3 204542582C20454358-
+   184 000000AC 2C204544582C204544-
+   185 000000B5 493A2000           
+   186 000000B9 436F70792050617261-     	      copy_debug_str db "Copy Params: EAX, EBX, ECX: ", 0
+   187 000000C2 6D733A204541582C20-
+   188 000000CB 4542582C204543583A-
+   189 000000D4 2000               
+   190 000000D6 54656D702061727261-     	      temp_array_debug_str db "Temp array: ", 0
+   191 000000DF 793A2000           
+   192 000000E3 4D6572676520436F70-     	      merge_copy_back_temp_debug_str db "Merge Copy back temp array: ", 0
+   193 000000EC 79206261636B207465-
+   194 000000F5 6D702061727261793A-
+   195 000000FE 2000               
+   196                                  	      %define ARR_LEN dword [n]
+   197                                  	      .UDATA
+   198                              <1>  segment .bss
+   199                                  	      ;; n	    resd 1
+   200                                  	      ;; arr   resd MAX_SIZE
+   201 00000000 <res 00000064>          	      temp_arr resd MAX_SIZE
+   202                                  	      .CODE
+   203                              <1>  segment .data
+   204                              <1>  segment .bss
+   205                              <1>  segment .text
+   206                                  	      .STARTUP
+   207                              <1> 
+   208                              <1>  global _start
+   209                              <1> _start:
+   210                                  
+   211                                  ;;; --------------------------------------------------
+   212                                  READ_ARR_LEN:			    ; Read the length
+   213                                  	      ;; PutStr PROMPT_ENTER_ARR_LEN
+   214                                  	      ;; nwln
+   215                                  	      ;; GetLInt [n]	    ; Size of input array
+   216                                  	      ;; PutLInt [n]
+   217                                  	      ;; nwln
+   218                                  
+   219                                  ;;; --------------------------------------------------
+   220                                  GET_ARRAY:
+   221 00000000 B8[00000000]            	      mov   EAX, arr
+   222 00000005 8B0D[14000000]          	      mov   ECX, ARR_LEN
+   223                                  	      ;; call  Read_Arr
+   224                                  
+   225 0000000B 8B0D[14000000]          	      mov   ECX, ARR_LEN
+   226                                  	      PutStr prompt_print_array
+   227 00000011 51                  <1>  push ECX
+   228 00000012 B9[5B000000]        <1>  mov ECX,%1
+   229 00000017 E8(00000000)        <1>  call proc_PutStr
+   230 0000001C 59                  <1>  pop ECX
+   231 0000001D E8C8020000              	      call  Print_Arr
+   232                                  
+   233                                  	      PutStr temp_array_debug_str
+   234 00000022 51                  <1>  push ECX
+   235 00000023 B9[D6000000]        <1>  mov ECX,%1
+   236 00000028 E8(00000000)        <1>  call proc_PutStr
+   237 0000002D 59                  <1>  pop ECX
+   238                                  	      PutLInt temp_arr
+   239 0000002E 50                  <1>  push EAX
+   240 0000002F B8[00000000]        <1>  mov EAX,%1
+   241 00000034 E8(00000000)        <1>  call proc_PutLInt
+   242 00000039 58                  <1>  pop EAX
+   243                                  	      nwln
+   244 0000003A E8(00000000)        <1>  call proc_nwln
+   245                                  
+   246 0000003F B8[00000000]            	      mov   EAX, arr
+   247 00000044 BB[00000000]            	      mov   EBX, temp_arr
+   248 00000049 8B0D[14000000]          	      mov   ECX, ARR_LEN
+   249 0000004F E80E000000              	      call  Merge_Sort
+   250 00000054 E87E020000              	      call Print_Orig_Arr
+   251                                  .EXIT
+   252 00000059 B801000000          <1>  mov EAX,1
+   253 0000005E 31DB                <1>  xor EBX,EBX
+   254 00000060 CD80                <1>  int 0x80
+   255                                  
+   256                                  ;;; --------------------------------------------------
+   257                                  Merge_Sort:
+   258                                  	      ;; EAX - Array start
+   259                                  	      ;; ECX - array length
+   260                                  
+   261                                  	      ;; pushad
+   262                                  	      PutStr merge_sort_debug_str
+   263 00000062 51                  <1>  push ECX
+   264 00000063 B9[64000000]        <1>  mov ECX,%1
+   265 00000068 E8(00000000)        <1>  call proc_PutStr
+   266 0000006D 59                  <1>  pop ECX
+   267                                  	      nwln
+   268 0000006E E8(00000000)        <1>  call proc_nwln
+   269                                  	      PutLInt EAX
+   270 00000073 50                  <1>  push EAX
+   271 00000074 89C0                <1>  mov EAX,%1
+   272 00000076 E8(00000000)        <1>  call proc_PutLInt
+   273 0000007B 58                  <1>  pop EAX
+   274                                  	      PutStr print_space
+   275 0000007C 51                  <1>  push ECX
+   276 0000007D B9[62000000]        <1>  mov ECX,%1
+   277 00000082 E8(00000000)        <1>  call proc_PutStr
+   278 00000087 59                  <1>  pop ECX
+   279                                  	      PutLInt ECX
+   280 00000088 50                  <1>  push EAX
+   281 00000089 89C8                <1>  mov EAX,%1
+   282 0000008B E8(00000000)        <1>  call proc_PutLInt
+   283 00000090 58                  <1>  pop EAX
+   284                                  	      nwln
+   285 00000091 E8(00000000)        <1>  call proc_nwln
+   286                                  
+   287 00000096 81F902000000            	      cmp   ECX, 2
+   288 0000009C 7C5E                    	      jl    Trivial_Merge_Sort
+   289                                  
+   290                                  	      ;; Merge_Sort (first half)
+   291                                  	      ;; ECX /= 2
+   292 0000009E 51                      	      push  ECX
+   293 0000009F D1E9                    	      shr   ECX, 1
+   294 000000A1 E8BCFFFFFF              	      call  Merge_Sort
+   295 000000A6 59                      	      pop   ECX
+   296                                  
+   297                                  	      ;; Merge_Sort (second half)
+   298 000000A7 50                      	      push  EAX
+   299 000000A8 53                      	      push  EBX
+   300 000000A9 51                      	      push  ECX
+   301                                  
+   302                                  	      ;; ECX = ECX - ECX/2
+   303 000000AA 89CA                    	      mov   EDX, ECX
+   304 000000AC D1EA                    	      shr   EDX, 1
+   305 000000AE 29D1                    	      sub   ECX, EDX
+   306 000000B0 69D204000000            	      imul  EDX, 4
+   307                                  	      ;; EAX = EAX + ECX/2
+   308 000000B6 01D0                    	      add   EAX, EDX
+   309 000000B8 52                      	      push  EDX
+   310 000000B9 E8A4FFFFFF              	      call  Merge_Sort
+   311 000000BE 5A                      	      pop   EDX
+   312                                  
+   313 000000BF 59                      	      pop   ECX
+   314 000000C0 5B                      	      pop   EBX
+   315 000000C1 58                      	      pop   EAX
+   316                                  
+   317                                  	      ;; Merge (first half, second half)
+   318                                  	      ;; Length of first half = ECX/2
+   319                                  	      ;; Length of second half = ECX - ECX/2
+   320 000000C2 89CA                    	      mov   EDX, ECX
+   321 000000C4 D1E9                    	      shr   ECX, 1
+   322 000000C6 29CA                    	      sub   EDX, ECX
+   323                                  
+   324                                  	      ;; Start of second half = EAX + (ECX/2) * 4
+   325 000000C8 89C3                    	      mov   EBX, EAX
+   326 000000CA 89CF                    	      mov   EDI, ECX
+   327 000000CC 69FF04000000            	      imul  EDI, 4
+   328 000000D2 01FB                    	      add   EBX, EDI
+   329                                  	      ;; Index of temp array = 0
+   330 000000D4 29FF                    	      sub   EDI, EDI
+   331 000000D6 E822000000              	      call Merge
+   332 000000DB E8F6000000              	      call Merge_Copy_Back_Temp
+   333                                  
+   334                                  	      ;; popad
+   335                                  	      nwln
+   336 000000E0 E8(00000000)        <1>  call proc_nwln
+   337 000000E5 E8DA010000              	      call Print_Temp_Arr
+   338                                  	      PutStr merge_sort_end_debug_str
+   339 000000EA 51                  <1>  push ECX
+   340 000000EB B9[82000000]        <1>  mov ECX,%1
+   341 000000F0 E8(00000000)        <1>  call proc_PutStr
+   342 000000F5 59                  <1>  pop ECX
+   343                                  	      nwln
+   344 000000F6 E8(00000000)        <1>  call proc_nwln
+   345 000000FB C3                      	      ret
+   346                                  
+   347                                  ;;; --------------------------------------------------
+   348                                  Trivial_Merge_Sort:
+   349 000000FC C3                      	      ret
+   350                                  	      
+   351                                  ;;; --------------------------------------------------
+   352                                  Merge:
+   353                                  	      ;; EAX - First array's start
+   354                                  	      ;; EBX - Second array's start
+   355                                  	      ;; ECX - Length of first array
+   356                                  	      ;; EDX - Length of second array
+   357                                  	      ;; EDI - Index in temp array
+   358 000000FD 60                      	      pushad
+   359                                  
+   360                                  	      PutStr merge_debug_str
+   361 000000FE 51                  <1>  push ECX
+   362 000000FF B9[91000000]        <1>  mov ECX,%1
+   363 00000104 E8(00000000)        <1>  call proc_PutStr
+   364 00000109 59                  <1>  pop ECX
+   365                                  	      nwln
+   366 0000010A E8(00000000)        <1>  call proc_nwln
+   367                                  	      PutLInt EAX
+   368 0000010F 50                  <1>  push EAX
+   369 00000110 89C0                <1>  mov EAX,%1
+   370 00000112 E8(00000000)        <1>  call proc_PutLInt
+   371 00000117 58                  <1>  pop EAX
+   372                                  	      PutStr print_space
+   373 00000118 51                  <1>  push ECX
+   374 00000119 B9[62000000]        <1>  mov ECX,%1
+   375 0000011E E8(00000000)        <1>  call proc_PutStr
+   376 00000123 59                  <1>  pop ECX
+   377                                  	      PutLInt EBX
+   378 00000124 50                  <1>  push EAX
+   379 00000125 89D8                <1>  mov EAX,%1
+   380 00000127 E8(00000000)        <1>  call proc_PutLInt
+   381 0000012C 58                  <1>  pop EAX
+   382                                  	      PutStr print_space
+   383 0000012D 51                  <1>  push ECX
+   384 0000012E B9[62000000]        <1>  mov ECX,%1
+   385 00000133 E8(00000000)        <1>  call proc_PutStr
+   386 00000138 59                  <1>  pop ECX
+   387                                  	      PutLInt ECX
+   388 00000139 50                  <1>  push EAX
+   389 0000013A 89C8                <1>  mov EAX,%1
+   390 0000013C E8(00000000)        <1>  call proc_PutLInt
+   391 00000141 58                  <1>  pop EAX
+   392                                  	      PutStr print_space
+   393 00000142 51                  <1>  push ECX
+   394 00000143 B9[62000000]        <1>  mov ECX,%1
+   395 00000148 E8(00000000)        <1>  call proc_PutStr
+   396 0000014D 59                  <1>  pop ECX
+   397                                  	      PutLInt EDX
+   398 0000014E 50                  <1>  push EAX
+   399 0000014F 89D0                <1>  mov EAX,%1
+   400 00000151 E8(00000000)        <1>  call proc_PutLInt
+   401 00000156 58                  <1>  pop EAX
+   402                                  	      PutStr print_space
+   403 00000157 51                  <1>  push ECX
+   404 00000158 B9[62000000]        <1>  mov ECX,%1
+   405 0000015D E8(00000000)        <1>  call proc_PutStr
+   406 00000162 59                  <1>  pop ECX
+   407                                  	      PutLInt EDI
+   408 00000163 50                  <1>  push EAX
+   409 00000164 89F8                <1>  mov EAX,%1
+   410 00000166 E8(00000000)        <1>  call proc_PutLInt
+   411 0000016B 58                  <1>  pop EAX
+   412 0000016C E853010000              	      call  Print_Temp_Arr
+   413                                  	      PutStr prompt_print_array
+   414 00000171 51                  <1>  push ECX
+   415 00000172 B9[5B000000]        <1>  mov ECX,%1
+   416 00000177 E8(00000000)        <1>  call proc_PutStr
+   417 0000017C 59                  <1>  pop ECX
+   418 0000017D E855010000              	      call  Print_Orig_Arr
+   419                                  
+   420                                  	      ;; Handle the cases where one array is empty
+   421 00000182 81F900000000            	      cmp   ECX, 0
+   422 00000188 7478                    	      jz    First_Array_Over
+   423 0000018A 81FA00000000            	      cmp   EDX, 0
+   424 00000190 0F8486000000            	      jz    Second_Array_Over
+   425                                  
+   426                                  	      ;; Compare first elements of both the arrays
+   427 00000196 52                      	      push  EDX
+   428 00000197 57                      	      push  EDI
+   429 00000198 8B10                    	      mov   EDX, [EAX]
+   430 0000019A 8B3B                    	      mov   EDI, [EBX]
+   431 0000019C 39FA                    	      cmp   EDX, EDI
+   432 0000019E 5F                      	      pop   EDI
+   433 0000019F 5A                      	      pop   EDX
+   434                                  	      ;; Pick which ever is the least and update that array
+   435 000001A0 7C05                    	      jl    Update_First_Array
+   436 000001A2 E917000000              	      jmp   Update_Second_Array
+   437                                  
+   438                                  ;;; --------------------------------------------------
+   439                                  Update_First_Array:
+   440                                  	      ;; min_elem = min (first elements of first array and second array)
+   441                                  	      ;; Put min_elem into the temp array
+   442 000001A7 FF30                    	      push  dword [EAX]
+   443 000001A9 8F04BD[00000000]        	      pop   dword [temp_arr + EDI * 4]
+   444 000001B0 0504000000              	      add   EAX, 4
+   445 000001B5 49                      	      dec   ECX
+   446 000001B6 47                      	      inc   EDI
+   447 000001B7 E841FFFFFF              	      call  Merge
+   448 000001BC 61                      	      popad
+   449                                  
+   450                                  	      ;; TODO: Copy it all back to the original array
+   451                                  	      ;; call Merge_Copy_Back_Temp
+   452 000001BD C3                      	      ret
+   453                                  
+   454                                  ;;; --------------------------------------------------
+   455                                  Update_Second_Array:
+   456                                  	      ;; min_elem = min (first elements of first array and second array)
+   457                                  	      ;; Put min_elem into the temp array
+   458 000001BE FF33                    	      push  dword [EBX]
+   459 000001C0 8F04BD[00000000]        	      pop   dword [temp_arr + EDI * 4]
+   460 000001C7 81C304000000            	      add   EBX, 4
+   461 000001CD 4A                      	      dec   EDX
+   462 000001CE 47                      	      inc   EDI
+   463 000001CF E829FFFFFF              	      call  Merge
+   464 000001D4 61                      	      popad
+   465                                  	      ;; TODO: Copy it all back to the original array
+   466                                  	      ;; call Merge_Copy_Back_Temp
+   467 000001D5 C3                      	      ret
+   468                                  
+   469                                  ;; ;;; --------------------------------------------------
+   470                                  Merge_Copy_Back_Temp:
+   471                                  	      ;; Copy back the temp array into original array
+   472                                  	      ;; EAX - First array's start
+   473                                  	      ;; EBX - Second array's start
+   474                                  	      ;; ECX - Length of first array
+   475                                  	      ;; EDX - Length of second array
+   476                                  	      ;; EDI - Index in temp array
+   477 000001D6 60                      	      pushad
+   478                                  	      nwln
+   479 000001D7 E8(00000000)        <1>  call proc_nwln
+   480                                  	      PutStr merge_copy_back_temp_debug_str
+   481 000001DC 51                  <1>  push ECX
+   482 000001DD B9[E3000000]        <1>  mov ECX,%1
+   483 000001E2 E8(00000000)        <1>  call proc_PutStr
+   484 000001E7 59                  <1>  pop ECX
+   485 000001E8 01D1                    	      add   ECX, EDX
+   486 000001EA 89C3                    	      mov   EBX, EAX
+   487 000001EC B8[00000000]            	      mov   EAX, temp_arr
+   488 000001F1 69FF04000000            	      imul  EDI, 4
+   489 000001F7 01F8                    	      add   EAX, EDI
+   490 000001F9 E834000000              	      call  Copy_Array
+   491 000001FE 61                      	      popad
+   492 000001FF C3                      	      ret
+   493                                  
+   494                                  ;;; --------------------------------------------------
+   495                                  Trivial_Merge:
+   496                                  	      ;; Note: One array is empty means no need to merge.
+   497 00000200 61                      	      popad
+   498 00000201 C3                      	      ret
+   499                                  
+   500                                  ;;; --------------------------------------------------
+   501                                  First_Array_Over:
+   502                                  	      ;; Copy the rest of the second array to the temp arr
+   503 00000202 60                      	      pushad
+   504 00000203 89D8                    	      mov   EAX, EBX
+   505 00000205 89D1                    	      mov   ECX, EDX
+   506 00000207 BB[00000000]            	      mov   EBX, temp_arr
+   507 0000020C 69FF04000000            	      imul  EDI, 4
+   508 00000212 01FB                    	      add   EBX, EDI
+   509 00000214 E819000000              	      call  Copy_Array
+   510 00000219 61                      	      popad
+   511 0000021A 61                      	      popad
+   512                                  	      ;; call Merge_Copy_Back_Temp
+   513 0000021B C3                      	      ret
+   514                                  
+   515                                  ;;; --------------------------------------------------
+   516                                  Second_Array_Over:
+   517                                  	      ;; Copy the rest of the first array to the temp arr
+   518 0000021C 60                      	      pushad
+   519 0000021D BB[00000000]            	      mov   EBX, temp_arr
+   520 00000222 69FF04000000            	      imul  EDI, 4
+   521 00000228 01FB                    	      add   EBX, EDI
+   522 0000022A E803000000              	      call  Copy_Array
+   523 0000022F 61                      	      popad
+   524 00000230 61                      	      popad
+   525                                  	      ;; call Merge_Copy_Back_Temp
+   526 00000231 C3                      	      ret
+   527                                  
+   528                                  ;;; --------------------------------------------------
+   529                                  Copy_Array:
+   530                                  	      ;; Copy array to destination array
+   531                                  	      ;; EAX - Array start
+   532                                  	      ;; EBX - Destination array
+   533                                  	      ;; ECX - Array length
+   534                                  	      PutStr copy_debug_str
+   535 00000232 51                  <1>  push ECX
+   536 00000233 B9[B9000000]        <1>  mov ECX,%1
+   537 00000238 E8(00000000)        <1>  call proc_PutStr
+   538 0000023D 59                  <1>  pop ECX
+   539                                  	      nwln
+   540 0000023E E8(00000000)        <1>  call proc_nwln
+   541                                  	      PutLInt EAX
+   542 00000243 50                  <1>  push EAX
+   543 00000244 89C0                <1>  mov EAX,%1
+   544 00000246 E8(00000000)        <1>  call proc_PutLInt
+   545 0000024B 58                  <1>  pop EAX
+   546                                  	      PutStr print_space
+   547 0000024C 51                  <1>  push ECX
+   548 0000024D B9[62000000]        <1>  mov ECX,%1
+   549 00000252 E8(00000000)        <1>  call proc_PutStr
+   550 00000257 59                  <1>  pop ECX
+   551                                  	      PutLInt EBX
+   552 00000258 50                  <1>  push EAX
+   553 00000259 89D8                <1>  mov EAX,%1
+   554 0000025B E8(00000000)        <1>  call proc_PutLInt
+   555 00000260 58                  <1>  pop EAX
+   556                                  	      PutStr print_space
+   557 00000261 51                  <1>  push ECX
+   558 00000262 B9[62000000]        <1>  mov ECX,%1
+   559 00000267 E8(00000000)        <1>  call proc_PutStr
+   560 0000026C 59                  <1>  pop ECX
+   561                                  	      PutLInt ECX
+   562 0000026D 50                  <1>  push EAX
+   563 0000026E 89C8                <1>  mov EAX,%1
+   564 00000270 E8(00000000)        <1>  call proc_PutLInt
+   565 00000275 58                  <1>  pop EAX
+   566                                  	      nwln
+   567 00000276 E8(00000000)        <1>  call proc_nwln
+   568                                  
+   569 0000027B 81F900000000            	      cmp   ECX, 0
+   570 00000281 741D                    	      jz    Copy_Empty_Array
+   571                                  
+   572 00000283 51                      	      push  ECX
+   573 00000284 29FF                    	      sub   EDI, EDI
+   574                                  copy_loop:
+   575 00000286 FF34B8                  	      push  dword [EAX + EDI * 4]
+   576 00000289 8F04BB                  	      pop   dword [EBX + EDI * 4]
+   577                                  	      ;; mov   EDX, [EAX + EDI * 4]
+   578                                  	      ;; mov   [EBX + EDI * 4], EDX
+   579 0000028C 47                      	      inc   EDI
+   580 0000028D E2F7                    	      loop  copy_loop
+   581                                  
+   582 0000028F 59                      	      pop   ECX
+   583 00000290 29FF                    	      sub   EDI, EDI
+   584                                  copy_print_loop:
+   585                                  	      PutLInt [EBX + EDI * 4]
+   586 00000292 50                  <1>  push EAX
+   587 00000293 8B04BB              <1>  mov EAX,%1
+   588 00000296 E8(00000000)        <1>  call proc_PutLInt
+   589 0000029B 58                  <1>  pop EAX
+   590 0000029C 47                      	      inc   EDI
+   591 0000029D E2F3                    	      loop  copy_print_loop
+   592                                  
+   593                                  	      ;; PutStr copy_debug_str
+   594                                  	      ;; nwln
+   595 0000029F C3                      	      ret
+   596                                  
+   597                                  Copy_Empty_Array:
+   598 000002A0 C3                      	      ret
+   599                                  
+   600                                  ;;; --------------------------------------------------
+   601                                  Read_Arr:
+   602                                  	      ;; EAX - array start
+   603                                  	      ;; ECX - array length
+   604                                  	      PutStr PROMPT_ENTER_ELEMENTS
+   605 000002A1 51                  <1>  push ECX
+   606 000002A2 B9[34000000]        <1>  mov ECX,%1
+   607 000002A7 E8(00000000)        <1>  call proc_PutStr
+   608 000002AC 59                  <1>  pop ECX
+   609                                  	      nwln
+   610 000002AD E8(00000000)        <1>  call proc_nwln
+   611 000002B2 89C6                    	      mov   ESI, EAX
+   612 000002B4 29FF                    	      sub   EDI, EDI
+   613                                  loop1:
+   614                                  	      ;; Maybe make this use some more appropriate addressing
+   615                                  	      ;; mode. I guess ESI is the only register allowed in
+   616                                  	      ;; [R1 + R2] addressing mode
+   617                                  	      GetLInt [ESI + EDI * 4]
+   618                              <1> %ifnidni %1,EAX
+   619 000002B6 50                  <1>  push EAX
+   620 000002B7 E8(00000000)        <1>  call proc_GetLInt
+   621 000002BC 8904BE              <1>  mov %1,EAX
+   622 000002BF 58                  <1>  pop EAX
+   623                              <1> %else
+   624                              <1>  call proc_GetLInt
+   625                              <1> %endif
+   626 000002C0 47                      	      inc   EDI
+   627 000002C1 E2F3                    	      loop  loop1
+   628 000002C3 C3                      	      ret
+   629                                  
+   630                                  ;;; --------------------------------------------------
+   631                                  Print_Temp_Arr:
+   632 000002C4 60                      	      pushad
+   633 000002C5 B8[00000000]            	      mov EAX, temp_arr
+   634 000002CA 8B0D[14000000]          	      mov ECX, ARR_LEN
+   635 000002D0 E815000000              	      call Print_Arr
+   636 000002D5 61                      	      popad
+   637 000002D6 C3                      	      ret
+   638                                  
+   639                                  ;;; --------------------------------------------------
+   640                                  Print_Orig_Arr:
+   641 000002D7 60                      	      pushad
+   642 000002D8 B8[00000000]            	      mov EAX, arr
+   643 000002DD 8B0D[14000000]          	      mov ECX, ARR_LEN
+   644 000002E3 E802000000              	      call Print_Arr
+   645 000002E8 61                      	      popad
+   646 000002E9 C3                      	      ret
+   647                                  
+   648                                  ;;; --------------------------------------------------
+   649                                  Print_Arr:
+   650                                  	      ;; EAX - Array start
+   651                                  	      ;; ECX - array length
+   652                                  	      nwln
+   653 000002EA E8(00000000)        <1>  call proc_nwln
+   654 000002EF 89C6                    	      mov   ESI, EAX
+   655 000002F1 29FF                    	      sub   EDI, EDI
+   656                                  new_loop1:
+   657                                  	      PutLInt [ESI + EDI * 4]
+   658 000002F3 50                  <1>  push EAX
+   659 000002F4 8B04BE              <1>  mov EAX,%1
+   660 000002F7 E8(00000000)        <1>  call proc_PutLInt
+   661 000002FC 58                  <1>  pop EAX
+   662                                  	      PutStr print_space
+   663 000002FD 51                  <1>  push ECX
+   664 000002FE B9[62000000]        <1>  mov ECX,%1
+   665 00000303 E8(00000000)        <1>  call proc_PutStr
+   666 00000308 59                  <1>  pop ECX
+   667 00000309 47                      	      inc   EDI
+   668 0000030A E2E7                    	      loop  new_loop1
+   669                                  	      nwln
+   670 0000030C E8(00000000)        <1>  call proc_nwln
+   671 00000311 C3                      	      ret
