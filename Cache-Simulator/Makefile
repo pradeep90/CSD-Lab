@@ -37,6 +37,7 @@ program_LIBRARIES :=
 # Remember that CPPFLAGS is the C preprocessor flags, so anything that compiles a C or C++ source file into an object file will use this flag.
 CPPFLAGS += $(foreach includedir,$(program_INCLUDE_DIRS),-I$(includedir))
 CPPFLAGS += -g
+CPPFLAGS += -Wall
 
 # This adds -L$(librarydir) for every library directory given in $(program_LIBRARY_DIRS)... so if you used ./lib, it would expand to -L./lib
 # Since the LDFLAGS are used when linking, this will cause the appropriate flags to be passed to the linker.
