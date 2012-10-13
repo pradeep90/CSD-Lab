@@ -1,7 +1,6 @@
 			Cache Simulator Notes
 
 * Performance
-  CLOCK: [2012-09-11 Tue 21:00]
 * Cache simulator
 ** Design a cache simulator that takes in a memory trace and simulates the behaviour of a real cache
 ** Cache parameters
@@ -25,3 +24,4 @@
 * Memory trace generator
 ** Given a program, generate its memory trace.
 * Matrix multiplication program (size n, blocking factor s)
+
