@@ -3,8 +3,8 @@
 * Plan
 ** DONE merge_sort (start_addr, mid_addr)
 ** DONE merge_sort (mid_addr + 1, end_addr)
-** TODO merge (start_addr, end_addr)
+** DONE merge (start_addr, end_addr)
 *** DONE copy the first element of array which is least and increment its start index
 *** DONE call merge recursively
-*** TODO Copy back
-* TODO Write comments
+*** DONE Copy back
+* DONE Write comments

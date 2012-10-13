@@ -1,0 +1,18 @@
+				README
+
+* Merge Sort
+  Program to sort elements of an array using merge sort.
+  The original array is modified.
+
+* Algorithm
+
+** Merge Sort
+   The Merge Sort function is recursive. 
+
+** Merge
+   Merge is done recursively.
+   
+* To execute
+  make merge-sort
+  ./a.out
+  

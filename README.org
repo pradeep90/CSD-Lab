@@ -1,4 +1,8 @@
 				README
 
 * Code for Computer Systems Design course @ IITM
-
+* VVIP If you call a function that modifies register values, they will remain modified.
+* To save and restore values of all registers on the stack - pushad and popad
+* Just discovered that you can use any index as the base register in [R1 + R2 * 4] type instructions
+* VVIP Gotcha: Do popad in all branches of the current function (in case you've done pushad at the beginning).
+** Do it in every label you may possibly jump to.
